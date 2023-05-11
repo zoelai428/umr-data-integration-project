@@ -29,7 +29,7 @@ integrated and cleaned data.
 
 There are 2 main categories of datasets that are applied in this project: Bigfoot and UFO.
 For convenience, all of these datasets can be downloaded from
-[here](https://hessenbox.uni-marburg.de/dl/fi9vhEKt4uthdwRWTSmw5V/.dir) with the correct predefined filenames,
+[here](https://hessenbox.uni-marburg.de/dl/fiHf8BF7GjgyhXviHqyJzE/datasets.dir) with the correct predefined filenames,
 whereas the following documents their original sources with respective links.
 
 *About Bigfoot*
@@ -66,4 +66,5 @@ After all the required datasets are saved under the directory `0_datasets`, they
 
 Several functions are defined so as to accomodate different file types. They include: 
 - `read_csv_file(String filename)` for loading csv files,
-- 
+- `read_json_file(String filename, String[] header)` for loading json files, and
+- `read_xlsx_file(String filename)` for loading xlsx files.
