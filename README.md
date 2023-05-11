@@ -41,7 +41,7 @@ whereas the following documents their original sources with respective links.
 Original source from Timothy Renner on data.world with link [here](https://data.world/timothyrenner/bfro-sightings-data).
 
 - `bigfoot3_Bigfoot_Sightings.csv`: Original source from ArcGIS with link 
-[here](https://hub.arcgis.com/datasets/d0afc5b29e4346cc9a4cf8e43bcaaed0_0/explore?location=32.184092%2C-115.796850%2C3.88)
+[here](https://hub.arcgis.com/datasets/d0afc5b29e4346cc9a4cf8e43bcaaed0_0/explore?location=32.184092%2C-115.796850%2C3.88).
 
 - `bigfoot4_DataDNA_Dataset_Challenge-February_2023.xlsx`: Original source from Kaggle with link 
 [here](https://www.kaggle.com/datasets/sridharstreaks/datadna-dataset-challenge-feb-bigfoot-sightings).
