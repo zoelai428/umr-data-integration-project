@@ -12,12 +12,11 @@ hopefully answers to our questions.
 This data integration project has four components: preparation, data
 integration, data cleaning, and showcase.
 
-- `0_datasets`: Should contain all the datasets with the predefined filenames. 
-  They can be downloaded [here](https://hessenbox.uni-marburg.de/dl/fi9vhEKt4uthdwRWTSmw5V/.dir). 
-  Details of the original sources can be found in `Datasets` section below.
-- `1_preparation`: [to be edited] Code to extract and load your datasets into a common space
-  (e.g., sqlite or Jupyter notebook). You might also want to write code to explore the
-datasets.
+- `0_datasets`: This directory should contain all the required datasets with our predefined filenames. 
+  Details can be found in "**Step 0: Datasets**" section below.
+- `1_preparation`: This directory contains our drafted ER-Model, slides for our presentation
+  and our first draft of `Main.java`. `Main.java` aims to read all the datasets 
+  correctly according to our preferred format. Details can be found in "**Step 1: Preparation**" section below.
 - `2_integration`: [to be edited] Experiments to integrate your datasets and a program that
   implements your final integration pipeline.
 - `3_cleaning`: [to be edited] Experiments to clean your integrated dataset and a program that
@@ -26,10 +25,12 @@ datasets.
   the results of your data integration pipeline, and, finally, against your
 integrated and cleaned data.
 
-## Datasets
+## Step 0: Datasets
 
 There are 2 main categories of datasets that are applied in this project: Bigfoot and UFO.
-The following documents the original sources of these datasets:
+For convenience, all of these datasets can be downloaded from
+[here](https://hessenbox.uni-marburg.de/dl/fi9vhEKt4uthdwRWTSmw5V/.dir) with the correct predefined filenames,
+whereas the following documents their original sources with respective links.
 
 *About Bigfoot*
 
@@ -58,7 +59,11 @@ Original source from Timothy Renner on data.world with link [here](https://data.
   Original source from Kaggle with link
   [here](https://www.kaggle.com/datasets/thedevastator/uncovering-mysterious-unexplained-ufo-sightings).
 
-## [to be edited]Documentation
+## Step 1: Preparation
 
-All code documentation and instructions should be placed in this `README.md`;
-feel free to erase this intro text.
+After all the required datasets are saved under the directory `0_datasets`, they are then loaded to our format as 
+`List<String[]>` in `Main.java`, so that the first list contains the headings and the remaining lists contain the records.
+
+Several functions are defined so as to accomodate different file types. They include: 
+- `read_csv_file(String filename)` for loading csv files,
+- 
