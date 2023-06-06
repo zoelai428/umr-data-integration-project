@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +17,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+
 public class Main {
+
+    private final static String url = "jdbc:postgresql://localhost:5432/dataintegration";
+    private final static String username = "postgres";
+    private final static String password = "";
+
+//    static final String DB_URL = "jdbc:postgresql://localhost:5432/northwind";
+//    static final String USER = "workshop";
+//    static final String PASS = "secret";
 
     /** This function reads a csv file from the designated folder "..\\umr-data-integration-project\\0_datasets".
      *
@@ -135,6 +145,40 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
+
+
+
+        try {
+            Connection connection = DriverManager.getConnection(url, username, password);
+
+            // Create a statement object
+            Statement statement = connection.createStatement();
+
+            // Execute a query
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM report");
+
+            // Process the results
+            while (resultSet.next()) {
+                // Access the data from the result set
+                int id = resultSet.getInt("id");
+                String name = resultSet.getString("name");
+
+                // Do something with the retrieved data
+                System.out.println("ID: " + id + ", Name: " + name);
+            }
+
+            // Close the result set, statement, and connection
+            resultSet.close();
+            statement.close();
+            connection.close();
+        } catch (SQLException e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+
+
+
+
         /** Test reading csv files*/
         List<String[]> file_bigfoot1 = read_csv_file("bigfoot1_reports.csv");
 
