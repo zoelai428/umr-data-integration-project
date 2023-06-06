@@ -25,7 +25,7 @@ public class Main {
      * @throws IOException
      */
     public static List<String[]> read_csv_file(String filename) throws IOException {
-        String filepath = "..\\umr-data-integration-project\\0_datasets\\" + filename;
+        String filepath = "../umr-data-integration-project/0_datasets/" + filename;
         List<String[]> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filepath))) {
             String line = "";
@@ -46,10 +46,13 @@ public class Main {
      * @param header has to be an array of Strings which contain the corresponding headers of the dataset
      * @return a list of arrays of String extracted directly from the given file
      */
+
+    // /umr-data-integration-project/0_datasets/bigfoot1_reports.csv
+
     public static List<String[]> read_json_file(String filename, String[] header) {
         BufferedReader br = null;
         JSONParser parser = new JSONParser();
-        String filepath = "..\\umr-data-integration-project\\0_datasets\\" + filename;
+        String filepath = "../umr-data-integration-project/0_datasets/" + filename;
         List<String[]> result = new ArrayList<>();
         result.add(header);
         try {
@@ -89,7 +92,7 @@ public class Main {
      * @return a list of arrays of String extracted directly from the given file
      */
     public static List<String[]> read_xlsx_file(String filename) {
-        String filepath = "..\\umr-data-integration-project\\0_datasets\\" + filename;
+        String filepath = "../umr-data-integration-project/0_datasets/" + filename;
         List<String[]> result = new ArrayList<>();
         Boolean firstRow = true;
         int columnsCount = 0;
@@ -111,7 +114,7 @@ public class Main {
                         array = Arrays.copyOf(array, ++columnsCount);
                     }
                     Cell cell = cellIterator.next();
-                    switch (cell.getCellTypeEnum()) {
+                    switch (cell.getCellType()) {
                         case STRING:
                             array[index++] = cell.getStringCellValue();
                             break;
