@@ -63,7 +63,7 @@ Original source from Timothy Renner on data.world with link [here](https://data.
 ## Step 1: Preparation
 
 After all the required datasets are saved under the directory `0_datasets`, they are then loaded to our format as 
-`List<String[]>` in `Main.java`, so that the first list contains the headings and the remaining lists contain the records.
+`List<String[]>` in `Main.java`, so that the first array contains the headings and the remaining arrays contain the records.
 
 Several functions are defined so as to accomodate different file types. They include: 
 - `read_csv_file(String filename)` for loading csv files,

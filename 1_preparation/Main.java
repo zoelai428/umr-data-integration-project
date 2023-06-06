@@ -16,13 +16,13 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
+import java.math.BigDecimal;
 
 public class Main {
 
     private final static String url = "jdbc:postgresql://localhost:5432/dataintegration";
     private final static String username = "postgres";
-    private final static String password = "";
+    private final static String password = "123";
 
 //    static final String DB_URL = "jdbc:postgresql://localhost:5432/northwind";
 //    static final String USER = "workshop";
@@ -40,7 +40,7 @@ public class Main {
         try (BufferedReader br = new BufferedReader(new FileReader(filepath))) {
             String line = "";
             while((line = br.readLine()) != null) {
-                result.add(line.split(","));
+                result.add(splitStringByCommas(line));
             }
         } catch (FileNotFoundException e) {
             System.err.println("ERROR: File not found " + filename);
@@ -49,6 +49,40 @@ public class Main {
         }
         return result;
     }
+
+
+    /** This function helps to preserve commas stated within double-quotation marks.
+     * Only commas outside of quotation marks would be split into String array elements.
+     *
+     * @param input the String to be split by commas
+     * @return a String array that stores the splitted substrings from input
+     */
+    public static String[] splitStringByCommas(String input) {
+        List<String> result = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean inQuotes = false;
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (c == '\"') {
+                inQuotes = !inQuotes;
+                sb.append(c);
+            } else if (c == ',' && !inQuotes) {
+                result.add(sb.toString().trim());
+                sb.setLength(0);
+            } else {
+                sb.append(c);
+            }
+        }
+        if (sb.length() > 0) {
+            result.add(sb.toString().trim());
+        }
+        return result.toArray(new String[0]);
+    }
+
+
+
 
     /** This function reads a json file from the designated folder "..\\umr-data-integration-project\\0_datasets".
      *
@@ -124,7 +158,7 @@ public class Main {
                         array = Arrays.copyOf(array, ++columnsCount);
                     }
                     Cell cell = cellIterator.next();
-                    switch (cell.getCellType()) {
+                    switch (cell.getCellTypeEnum()) {
                         case STRING:
                             array[index++] = cell.getStringCellValue();
                             break;
@@ -144,8 +178,146 @@ public class Main {
         return result;
     }
 
-    public static void main(String[] args) throws IOException {
 
+    public static void main(String[] args) throws IOException {
+        // define headers for json files
+        String[] header_ufo1 = {"text", "stats", "date_time", "report_link", "city", "state", "country", "shape", "duration", "summary", "posted"};
+        String[] header_bigfoot2 = {"YEAR", "SEASON", "MONTH", "DATE", "STATE", "COUNTY", "LOCATION_DETAILS", "NEAREST_TOWN", "NEAREST_ROAD", "OBSERVED", "ALSO_NOTICED", "OTHER_WITNESSES", "OTHER_STORIES", "TIME_AND_CONDITIONS", "ENVIRONMENT", "REPORT_NUMBER", "REPORT_CLASS"};
+
+        // read files
+        List<String[]> file_bigfoot1 = read_csv_file("bigfoot1_reports.csv");
+        List<String[]> file_bigfoot2_locations = read_csv_file("bigfoot2_bfro_locations.csv");
+        List<String[]> file_bigfoot2_reports = read_json_file("bigfoot2_bfro_reports.json", header_bigfoot2);
+        List<String[]> file_bigfoot2_reports_geocoded = read_csv_file("bigfoot2_bfro_reports_geocoded.csv");
+        List<String[]> file_bigfoot3 = read_csv_file("bigfoot3_Bigfoot_Sightings.csv");
+        List<String[]> file_bigfoot4 = read_xlsx_file("bigfoot4_DataDNA_Dataset_Challenge-February_2023.xlsx");
+        List<String[]> file_ufo1_csv = read_csv_file("ufo1_nuforc_reports.csv");
+        List<String[]> file_ufo1_json = read_json_file("ufo1_nuforc_reports.json", header_ufo1);
+        List<String[]> file_ufo2 = read_csv_file("ufo2_ufo_sighting_data.csv");
+        List<String[]> file_ufo3 = read_csv_file("ufo3_nuforc_reports.csv");
+
+        // check sizes
+        System.out.println("bigfoot1 size: " + file_bigfoot1.size());
+        System.out.println("bigfoot2_locations size: " + file_bigfoot2_locations.size());
+        System.out.println("bigfoot2_reports size: " + file_bigfoot2_reports.size());
+        System.out.println("bigfoot2_reports_geocoded size: " + file_bigfoot2_reports_geocoded.size());
+        System.out.println("bigfoot3 size: " + file_bigfoot3.size());
+        System.out.println("bigfoot4 size: " + file_bigfoot4.size());
+        System.out.println("ufo1_csv size: " + file_ufo1_csv.size());
+        System.out.println("ufo1_json size: " + file_ufo1_json.size());
+        System.out.println("ufo2 size: " + file_ufo2.size());
+        System.out.println("ufo3 size: " + file_ufo3.size());
+
+        try {
+            Connection connection = DriverManager.getConnection(url, username, password);
+            int report_id = 10000000, weather_id = 20000000, location_id = 30000000, ufo_id = 40000000, bigfoot_id = 50000000;
+            PreparedStatement statement_report = connection.prepareStatement("INSERT INTO report VALUES (?, ?, ?, ?, ?, ?)");
+            PreparedStatement statement_ufo = connection.prepareStatement("INSERT INTO ufo_sighting VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement statement_bigfoot = connection.prepareStatement("INSERT INTO bigfoot_sighting VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement statement_weather = connection.prepareStatement("INSERT INTO weather VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement statement_location = connection.prepareStatement("INSERT INTO location VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+            // import bigfoot1 to SQL
+            for (int i = 1; i < file_bigfoot1.size(); i++) {
+                String[] record = file_bigfoot1.get(i);
+                statement_report.setInt(1, report_id);
+//                statement_report.setTimestamp(2, Timestamp.valueOf(record[3])); // Fehler
+                statement_report.setTimestamp(2, null); // zuerst null setzen
+                statement_report.setString(3, record[22]);
+                statement_report.setString(4, record[0]);
+                statement_report.setString(5, record[4]);
+                statement_report.setString(6, record[13]);
+                statement_report.executeUpdate();
+
+                statement_weather.setInt(1, weather_id);
+                for (int j = 2; j < 10; j++) {
+                    if (j != 6)
+                        statement_weather.setBigDecimal(j, null);
+                }
+                statement_weather.setArray(6, null);
+                statement_weather.executeUpdate();
+
+                statement_location.setInt(1, location_id);
+                statement_location.setBigDecimal(2, null);
+                statement_location.setBigDecimal(3, null);
+                statement_location.setString(4, null);
+                statement_location.setString(5, record[9]);
+                statement_location.setString(6, record[8]);
+                statement_location.setString(7, record[11]);
+                statement_location.setString(8, record[12]);
+                statement_location.setString(9, record[10]);
+                statement_location.executeUpdate();
+
+                statement_bigfoot.setInt(1, bigfoot_id);
+                if (record[2].length() == 0)
+                    statement_bigfoot.setString(2, null);
+                else
+                    statement_bigfoot.setString(2, record[2].substring(record[2].length()-1));
+                statement_bigfoot.setInt(3, report_id);
+                statement_bigfoot.setInt(4, weather_id);
+                statement_bigfoot.setInt(5, location_id);
+                statement_bigfoot.executeUpdate();
+
+                report_id++;
+                weather_id++;
+                location_id++;
+                bigfoot_id++;
+            }
+
+            // import bigfoot2_locations to SQL
+            for (int i = 1; i < file_bigfoot2_locations.size(); i++) {
+                String[] record = file_bigfoot2_locations.get(i);
+                statement_report.setInt(1, report_id);
+//                statement_report.setTimestamp(2, Timestamp.valueOf(record[3]));
+                statement_report.setTimestamp(2, null);
+                statement_report.setString(3, null);
+                statement_report.setString(4, null);
+                statement_report.setString(5, record[1]);
+                statement_report.setString(6, null);
+                statement_report.executeUpdate();
+
+                statement_weather.setInt(1, weather_id);
+                for (int j = 2; j < 10; j++) {
+                    if (j != 6)
+                        statement_weather.setBigDecimal(j, null);
+                }
+                statement_weather.setArray(6, null);
+                statement_weather.executeUpdate();
+
+                statement_location.setInt(1, location_id);
+                statement_location.setDouble(2, Double.valueOf(record[5]));
+                statement_location.setDouble(3, Double.valueOf(record[4]));
+                for (int j = 4; j < 10; j++) {
+                    statement_location.setString(j, null);
+                }
+                statement_location.executeUpdate();
+
+                statement_bigfoot.setInt(1, bigfoot_id);
+                statement_bigfoot.setString(2, record[2].substring(record[2].length()-1));
+                statement_bigfoot.setInt(3, report_id);
+                statement_bigfoot.setInt(4, weather_id);
+                statement_bigfoot.setInt(5, location_id);
+                statement_bigfoot.executeUpdate();
+
+                report_id++;
+                weather_id++;
+                location_id++;
+                bigfoot_id++;
+            }
+
+            // import bigfoot2_reports to SQL
+//            for (int i = 1; i < file_bigfoot2_reports.size(); i++) {
+//                String[] record = file_bigfoot2_reports.get(i);
+//                statement_report.setInt(1, report_id);
+//
+//
+//                report_id++;
+//                location_id++;
+//            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
 
         try {
@@ -155,16 +327,16 @@ public class Main {
             Statement statement = connection.createStatement();
 
             // Execute a query
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM report");
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM report ORDER BY report_id DESC LIMIT 5");
 
             // Process the results
             while (resultSet.next()) {
                 // Access the data from the result set
-                int id = resultSet.getInt("id");
-                String name = resultSet.getString("name");
+                int id = resultSet.getInt("report_id");
+                String headline = resultSet.getString("headline");
 
                 // Do something with the retrieved data
-                System.out.println("ID: " + id + ", Name: " + name);
+                System.out.println("report_id: " + id + "; headline: " + headline);
             }
 
             // Close the result set, statement, and connection
@@ -179,61 +351,7 @@ public class Main {
 
 
 
-        /** Test reading csv files*/
-        List<String[]> file_bigfoot1 = read_csv_file("bigfoot1_reports.csv");
-
-        System.out.println(Arrays.toString(file_bigfoot1.get(0)));
-        System.out.println(Arrays.toString(file_bigfoot1.get(10)));
-
-        List<String[]> file_bigfoot2_locations = read_csv_file("bigfoot2_bfro_locations.csv");
-        List<String[]> file_bigfoot2_reports_geocoded = read_csv_file("bigfoot2_bfro_reports_geocoded.csv");
-        List<String[]> file_bigfoot3 = read_csv_file("bigfoot3_Bigfoot_Sightings.csv");
-        List<String[]> file_ufo1_csv = read_csv_file("ufo1_nuforc_reports.csv");
-        List<String[]> file_ufo2 = read_csv_file("ufo2_ufo_sighting_data.csv");
-        List<String[]> file_ufo3 = read_csv_file("ufo3_nuforc_reports.csv");
 
 
-        /** Test reading json files*/
-        String[] header_ufo1 = {"text", "stats", "date_time", "report_link", "city", "state", "country", "shape", "duration", "summary", "posted"};
-        List<String[]> file_ufo1_json = read_json_file("ufo1_nuforc_reports.json", header_ufo1);
-        System.out.println(Arrays.toString(file_ufo1_json.get(0)));
-        System.out.println(Arrays.toString(file_ufo1_json.get(3)));
-
-        /** For checking purpose: 3rd entry is as below:*/
-//        {"text": "Group of several orange lights, seemingly circular.  Lights did not blink.   \n \nObject appeared to be like a plane, but the color and speed wasn\u2019t correct, and it seemed closer and lower than a plane.  Slow and steady course.   \n \nAfter it disappeared into the clouds, the same exact thing happened about 1-2 minutes later (a second identical object on what seemed like the same flight path). \n \n \n((NUFORC Note:  Time indicated by witness may have been flawed.  We have amended it, in order to indicate a nighttime sighting.  Witness elects to remain totally anonymous; provides no contact information, so we are unable to confirm the time.  PD))",
-//        "stats": "Occurred : 6/20/2019 23:28  (Entered as : 06/20/19 11:28) Reported: 6/20/2019 8:36:51 PM 20:36 Posted: 6/27/2019 Location: Charlottesville, VA Shape: Circle Duration: 15 seconds Characteristics: There were lights on the object",
-//        "date_time": "6/20/19 23:28",
-//        "report_link": "http://www.nuforc.org/webreports/reports/146/S146944.html",
-//        "city": "Charlottesville",
-//        "state": "VA",
-//        "country": "USA",
-//        "shape": "Circle",
-//        "duration": "15 seconds",
-//        "summary": "Group of several orange lights, seemingly circular.  Lights did not blink.   ((anonymous report))",
-//        "posted": "6/27/19"}
-
-        /** Output: */
-//[Group of several orange lights, seemingly circular.  Lights did not blink.
-//
-//        Object appeared to be like a plane, but the color and speed wasn�t correct, and it seemed closer and lower than a plane.  Slow and steady course.
-//
-//        After it disappeared into the clouds, the same exact thing happened about 1-2 minutes later (a second identical object on what seemed like the same flight path).
-//
-//
-//        ((NUFORC Note:  Time indicated by witness may have been flawed.  We have amended it, in order to indicate a nighttime sighting.  Witness elects to remain totally anonymous; provides no contact information, so we are unable to confirm the time.  PD)), Occurred : 6/20/2019 23:28  (Entered as : 06/20/19 11:28) Reported: 6/20/2019 8:36:51 PM 20:36 Posted: 6/27/2019 Location: Charlottesville, VA Shape: Circle Duration: 15 seconds Characteristics: There were lights on the object, 6/20/19 23:28, http://www.nuforc.org/webreports/reports/146/S146944.html, Charlottesville, VA, USA, Circle, 15 seconds, Group of several orange lights, seemingly circular.  Lights did not blink.   ((anonymous report)), 6/27/19]
-
-        String[] header_bigfoot2 = {"YEAR", "SEASON", "MONTH", "DATE", "STATE", "COUNTY", "LOCATION_DETAILS", "NEAREST_TOWN", "NEAREST_ROAD", "OBSERVED", "ALSO_NOTICED", "OTHER_WITNESSES", "OTHER_STORIES", "TIME_AND_CONDITIONS", "ENVIRONMENT", "REPORT_NUMBER", "REPORT_CLASS"};
-        List<String[]> file_bigfoot2_reports = read_json_file("bigfoot2_bfro_reports.json", header_bigfoot2);
-        System.out.println(Arrays.toString(file_bigfoot2_reports.get(0)));
-        System.out.println(Arrays.toString(file_bigfoot2_reports.get(8)));
-
-
-
-        /** Test reading xlsx files*/
-
-        List<String[]> file_bigfoot4 = read_xlsx_file("bigfoot4_DataDNA_Dataset_Challenge-February_2023.xlsx");
-        System.out.println(Arrays.toString(file_bigfoot4.get(0)));
-        System.out.println(Arrays.toString(file_bigfoot4.get(3)));
-        System.out.println(Arrays.toString(file_bigfoot4.get(4)));
     }
 }
