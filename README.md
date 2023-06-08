@@ -15,10 +15,9 @@ integration, data cleaning, and showcase.
 - `0_datasets`: This directory should contain all the required datasets with our predefined filenames. 
   Details can be found in "**Step 0: Datasets**" section below.
 - `1_preparation`: This directory contains our drafted ER-Model, slides for our presentation
-  and our first draft of `Main.java`. `Main.java` aims to read all the datasets 
-  correctly according to our preferred format. Details can be found in "**Step 1: Preparation**" section below.
-- `2_integration`: [to be edited] Experiments to integrate your datasets and a program that
-  implements your final integration pipeline.
+  and `Main.java`. At this stage, we aim to read all the datasets correctly according to our preferred format. 
+  Details can be found in "**Step 1: Preparation**" section below.
+- `2_integration`: Our integration pipeline using data matching methods is stored here.
 - `3_cleaning`: [to be edited] Experiments to clean your integrated dataset and a program that
   implements your final data cleaning pipeline.
 - `3_showcase`: [to be edited] Code to implement your showcase. You can already run it against
@@ -69,3 +68,11 @@ Several functions are defined so as to accomodate different file types. They inc
 - `read_csv_file(String filename)` for loading csv files,
 - `read_json_file(String filename, String[] header)` for loading json files, and
 - `read_xlsx_file(String filename)` for loading xlsx files.
+
+## Step 2: Integration
+
+Two different approaches of data integration are carried out:
+1. Manual data integration can be found in the amended `Main.java` in `1_preparation` with a number of functions helping 
+    to assure approaprite datatypes when writing into our database; whereas
+2. a semi-automatic approach can be found in `2_integration`. Data Matching methods including Jaccard similarity,
+    JaroWinkler similarity and Levenshtein distance are applied here.
